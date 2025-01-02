@@ -14,12 +14,12 @@ def easy_time(seconds):
     parts = []
     if hour:
         if hour==1:
-            parts.append(f"{hour}HR")
+            parts.append(f"{hour} HR")
         else:
-            parts.append(f"{hour}HRS")
+            parts.append(f"{hour} HRS")
     if minute:
-        parts.append(f"{minute}MIN")
+        parts.append(f"{minute} MIN")
     if seconds:
-        parts.append(f"{seconds}SEC")
+        parts.append(f"{seconds} SEC")
 
     return " ".join(parts)
