@@ -28,7 +28,7 @@ def run_svr_lsm_iteration(symptom_folder, csv_name,behaviour_name,do_regress_out
 
     behaviors = regress_covariates_from_behavior(behaviors, covariates)
     print("\n\tTIME ELAPSED : ", easy_time(int(time.time() - start_time)), end="\n\n")
-    output_folder = f"outputs/V74_{symptom}_{n_permutations}_results_{get_current_datetime_for_filename()}"
+    output_folder = f"outputs/{symptom}_{n_permutations}_results_{get_current_datetime_for_filename()}"
     output_folder = Path(output_folder)
     Path(output_folder).mkdir(parents=True, exist_ok=True)
 
