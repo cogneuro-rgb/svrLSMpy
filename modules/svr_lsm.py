@@ -226,23 +226,23 @@ def svr_lsm(features, behaviors, masker, output_folder, param_grid, n_permutatio
     nifti_zmap_path = output_folder / 'zmap.nii.gz'
     nib.save(nifti_zmap, nifti_zmap_path)
 
-    nifti_zmap_p05 = threshold_img(nifti_zmap,threshold=1.644854,cluster_threshold=30,copy_header=True)
+    nifti_zmap_p05 = threshold_img(nifti_zmap,threshold=1.644854,cluster_threshold=30)
     print("Thresholding z-map at p<0.05...")
     nifti_zmap_thresholded_path = output_folder / 'zmap_p05.nii.gz'
     nib.save(nifti_zmap_p05, nifti_zmap_thresholded_path)
 
 
-    nifti_zmap_p01 = threshold_img(nifti_zmap, threshold=2.326348, cluster_threshold=30,copy_header=True)
+    nifti_zmap_p01 = threshold_img(nifti_zmap, threshold=2.326348, cluster_threshold=30)
     print("Thresholding z-map at p<0.01...")
     nifti_zmap_thresholded_path = output_folder / 'zmap_p01.nii.gz'
     nib.save(nifti_zmap_p01, nifti_zmap_thresholded_path)
 
-    nifti_zmap_p005 = threshold_img(nifti_zmap, threshold=2.575829, cluster_threshold=30,copy_header=True)
+    nifti_zmap_p005 = threshold_img(nifti_zmap, threshold=2.575829, cluster_threshold=30)
     print("Thresholding z-map at p<0.005...")
     nifti_zmap_thresholded_path = output_folder / 'zmap_p005.nii.gz'
     nib.save(nifti_zmap_p005, nifti_zmap_thresholded_path)
 
-    nifti_zmap_p001 = threshold_img(nifti_zmap, threshold=3.090232, cluster_threshold=30,copy_header=True)
+    nifti_zmap_p001 = threshold_img(nifti_zmap, threshold=3.090232, cluster_threshold=30)
     print("Thresholding z-map at p<0.001...")
     nifti_zmap_thresholded_path = output_folder / 'zmap_p001.nii.gz'
     nib.save(nifti_zmap_p001, nifti_zmap_thresholded_path)
