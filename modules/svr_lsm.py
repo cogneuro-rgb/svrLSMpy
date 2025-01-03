@@ -153,7 +153,7 @@ def svr_lsm(features, behaviors, masker, output_folder, param_grid, n_permutatio
 
                 # Update the progress bar, displaying elapsed time and ETA
                 elapsed_time = time.time() - permute_time
-                pbar.set_postfix(elapsed=f"{elapsed_time:.2f}s",eta=f"{(elapsed_time / (i + 1)) * (n_permutations - i - 1):.2f}s")
+                pbar.set_postfix(elapsed=f"{easy_time(elapsed_time)}s",eta=f"{easy_time((elapsed_time / (i + 1)) * (n_permutations - i - 1))}s")
 
     print(f"Permutations completed. Null distribution saved to {results_file}\n")
 
