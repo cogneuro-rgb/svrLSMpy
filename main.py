@@ -32,7 +32,8 @@ if __name__ == "__main__":
                           param_grid=param_grid,
                           n_permutations=1,
                           alpha=0.05,
-                          n_splits=5)
+                          n_splits=5,
+                          num_slices=7)
 
 
 
@@ -90,5 +91,6 @@ if __name__ == "__main__":
                           param_grid=param_grid,
                           n_permutations=1000,
                           alpha=0.05,
-                          n_splits=5)
+                          n_splits=5,
+                          num_slices=7)
     '''
