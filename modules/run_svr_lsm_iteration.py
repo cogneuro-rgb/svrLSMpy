@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 import numpy as np
 
-def run_svr_lsm_iteration(symptom_folder, csv_name,behaviour_name,do_regress_out_lesion_volume, normalize_vector, max_score,min_patient_count, param_grid, n_permutations, alpha, n_splits):
+def run_svr_lsm_iteration(symptom_folder, csv_name,behaviour_name,do_regress_out_lesion_volume, normalize_vector, max_score,min_patient_count, param_grid, n_permutations, alpha, n_splits, num_slices):
     # base_folder = Path.cwd()  # CURRENT DIRECTORY
     start_time = time.time()
 
@@ -28,11 +28,11 @@ def run_svr_lsm_iteration(symptom_folder, csv_name,behaviour_name,do_regress_out
 
     behaviors = regress_covariates_from_behavior(behaviors, covariates)
     print("\n\tTIME ELAPSED : ", easy_time(int(time.time() - start_time)), end="\n\n")
-    output_folder = f"outputs/{symptom}_{n_permutations}_results_{get_current_datetime_for_filename()}"
+    output_folder = f"outputs/V75_{symptom}_{n_permutations}_results_{get_current_datetime_for_filename()}"
     output_folder = Path(output_folder)
     Path(output_folder).mkdir(parents=True, exist_ok=True)
 
-    features, masker = filter_voxels_by_patient_count(lesion_files, min_patient_count, normalize_vector,output_folder)
+    min_patient_count, features, masker = filter_voxels_by_patient_count(lesion_files, min_patient_count, normalize_vector,output_folder)
     print("\n\tTIME ELAPSED : ", easy_time(int(time.time() - start_time)), end="\n\n")
     # Perform SVR-based lesion-symptom mapping
     svr_params, coef_map, nifti_zmap, zmap = svr_lsm(features=features,
@@ -64,7 +64,8 @@ def run_svr_lsm_iteration(symptom_folder, csv_name,behaviour_name,do_regress_out
 
     svr_lsm_report_path = output_folder / "svr_lsm_report.html"
 
-    time_taken = easy_time(start_time - time.time())
+    time_taken = easy_time(time.time() - start_time)
+
 
     # Save the report
     save_report(svr_lsm_report_path,
@@ -76,7 +77,7 @@ def run_svr_lsm_iteration(symptom_folder, csv_name,behaviour_name,do_regress_out
                 zmap,
                 min_patient_count,
                 num_patients,
-                covariate_info,
+                num_slices,
                 nifti_zmap,
                 zmap_atlas_output_dir,
                 time_taken,

@@ -4,9 +4,9 @@ import pandas as pd
 import nibabel as nib
 import base64
 
-from modules.plot_axial_slices import get_axial_slices,save_axial_mosaic
+from modules.plot_mosaics import get_axial_slices, get_coronal_slices, get_sagittal_slices, save_axial_mosaic, save_coronal_mosaic, save_sagittal_mosaic
 
-def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, zmap_range, zmap, min_patient_count,num_patients,covariate_info, nifti_zmap, zmap_atlas_output_dir, time_taken, num_lesions, mean_lesion_volume, n_clusters=5):
+def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, zmap_range, zmap, min_patient_count,num_patients, num_slices, nifti_zmap, zmap_atlas_output_dir, time_taken, num_lesions, mean_lesion_volume, n_clusters=5):
     """
     Save a comprehensive report of the LSM analysis, including parameters, significant voxels, and visualization.
     """
@@ -45,53 +45,149 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
 
     #significant_voxels = np.abs(zmap) > np.percentile(np.abs(zmap), 100 * (1 - alpha))
 
-    output_folder = Path(output_file).parent
-    html_view = view_img(f"{output_folder}/zmap.nii.gz",threshold=1.7,black_bg=False,cmap="jet")
+    output_folder = Path(Path(output_file).parent)
 
+    mosaic_output_folder = output_folder / "mosaics"
+    Path(mosaic_output_folder).mkdir(parents=True, exist_ok=True)
 
-    lesion_overlap_path = f"{output_folder}/lesion_overlap.nii.gz"
-    lesion_overlap_mosaic_path = f"{output_folder}/lesion_overlap_mosaic.png"
+    zmap_threshold_output_folder = output_folder / "thresholded_zmaps"
 
-    num_slices = 10
+    html_view = view_img(output_folder/"zmap.nii.gz",threshold=1.7,black_bg=False,cmap="jet")
+
+    lesion_overlap_path = output_folder / "lesion_overlap.nii.gz"
+    lesion_overlap_filtered_path = output_folder / "lesion_overlap_filtered.nii.gz"
+    svr_beta_map_path = output_folder / "beta_map.nii.gz"
+    zmap_path = output_folder / "zmap.nii.gz"
+    zmap_p05_path = zmap_threshold_output_folder / "zmap_p05.nii.gz"
+    zmap_p01_path = zmap_threshold_output_folder / "zmap_p01.nii.gz"
+    zmap_p005_path = zmap_threshold_output_folder / "zmap_p005.nii.gz"
+    zmap_p001_path = zmap_threshold_output_folder / "zmap_p001.nii.gz"
+
+    #AXIAL
     cut_coords = get_axial_slices(lesion_overlap_path, num_slices)
-    save_axial_mosaic(lesion_overlap_path, cut_coords, lesion_overlap_mosaic_path)
-    lesion_overlap_mosaic = encode_image(lesion_overlap_mosaic_path)
 
-    lesion_overlap_filtered_path = f"{output_folder}/lesion_overlap_filtered.nii.gz"
-    lesion_overlap_filtered_mosaic_path = f"{output_folder}/lesion_overlap_filtered_mosaic.png"
-    save_axial_mosaic(lesion_overlap_filtered_path, cut_coords, lesion_overlap_filtered_mosaic_path)
-    lesion_overlap_filtered_mosaic = encode_image(lesion_overlap_filtered_mosaic_path)
+    axial_lesion_overlap_mosaic_path = mosaic_output_folder/"axial_lesion_overlap_mosaic.png"
+    save_axial_mosaic(lesion_overlap_path, cut_coords, axial_lesion_overlap_mosaic_path)
+    axial_lesion_overlap_mosaic = encode_image(axial_lesion_overlap_mosaic_path)
 
-    svr_beta_map_path = f"{output_folder}/beta_map.nii.gz"
-    svr_beta_map_mosaic_path = f"{output_folder}/svr_beta_map_mosaic.png"
+    axial_lesion_overlap_filtered_mosaic_path = mosaic_output_folder/"axial_lesion_overlap_filtered_mosaic.png"
+    save_axial_mosaic(lesion_overlap_filtered_path, cut_coords, axial_lesion_overlap_filtered_mosaic_path)
+    axial_lesion_overlap_filtered_mosaic = encode_image(axial_lesion_overlap_filtered_mosaic_path)
+
+
+    axial_svr_beta_map_mosaic_path = mosaic_output_folder/"axial_svr_beta_map_mosaic.png"
+
     cut_coords = get_axial_slices(svr_beta_map_path, num_slices)
-    save_axial_mosaic(svr_beta_map_path, cut_coords, svr_beta_map_mosaic_path)
-    svr_beta_map_mosaic = encode_image(svr_beta_map_mosaic_path)
 
-    zmap_path = f"{output_folder}/zmap.nii.gz"
-    zmap_mosaic_path = f"{output_folder}/zmap_mosaic.png"
-    save_axial_mosaic(zmap_path, cut_coords, zmap_mosaic_path)
-    zmap_mosaic = encode_image(zmap_mosaic_path)
+    save_axial_mosaic(svr_beta_map_path, cut_coords, axial_svr_beta_map_mosaic_path)
+    axial_svr_beta_map_mosaic = encode_image(axial_svr_beta_map_mosaic_path)
 
-    zmap_p05_path = f"{output_folder}/zmap_p05.nii.gz"
-    zmap_p05_mosaic_path = f"{output_folder}/zmap_p05_mosaic.png"
-    save_axial_mosaic(zmap_p05_path, cut_coords, zmap_p05_mosaic_path)
-    zmap_p05_mosaic = encode_image(zmap_p05_mosaic_path)
 
-    zmap_p01_path = f"{output_folder}/zmap_p01.nii.gz"
-    zmap_p01_mosaic_path = f"{output_folder}/zmap_p01_mosaic.png"
-    save_axial_mosaic(zmap_p01_path, cut_coords, zmap_p01_mosaic_path)
-    zmap_p01_mosaic = encode_image(zmap_p01_mosaic_path)
+    axial_zmap_mosaic_path = mosaic_output_folder/"axial_zmap_mosaic.png"
+    save_axial_mosaic(zmap_path, cut_coords, axial_zmap_mosaic_path)
+    axial_zmap_mosaic = encode_image(axial_zmap_mosaic_path)
 
-    zmap_p005_path = f"{output_folder}/zmap_p005.nii.gz"
-    zmap_p005_mosaic_path = f"{output_folder}/zmap_p005_mosaic.png"
-    save_axial_mosaic(zmap_p005_path, cut_coords, zmap_p005_mosaic_path)
-    zmap_p005_mosaic = encode_image(zmap_p005_mosaic_path)
+    axial_zmap_p05_mosaic_path = mosaic_output_folder/"axial_zmap_p05_mosaic.png"
+    save_axial_mosaic(zmap_p05_path, cut_coords, axial_zmap_p05_mosaic_path)
+    axial_zmap_p05_mosaic = encode_image(axial_zmap_p05_mosaic_path)
 
-    zmap_p001_path = f"{output_folder}/zmap_p001.nii.gz"
-    zmap_p001_mosaic_path = f"{output_folder}/zmap_p001_mosaic.png"
-    save_axial_mosaic(zmap_p001_path, cut_coords, zmap_p001_mosaic_path)
-    zmap_p001_mosaic = encode_image(zmap_p001_mosaic_path)
+    axial_zmap_p01_mosaic_path = mosaic_output_folder/"axial_zmap_p01_mosaic.png"
+    save_axial_mosaic(zmap_p01_path, cut_coords, axial_zmap_p01_mosaic_path)
+    axial_zmap_p01_mosaic = encode_image(axial_zmap_p01_mosaic_path)
+
+    axial_zmap_p005_mosaic_path = mosaic_output_folder/"axial_zmap_p005_mosaic.png"
+    save_axial_mosaic(zmap_p005_path, cut_coords, axial_zmap_p005_mosaic_path)
+    axial_zmap_p005_mosaic = encode_image(axial_zmap_p005_mosaic_path)
+
+    axial_zmap_p001_mosaic_path = mosaic_output_folder/"axial_zmap_p001_mosaic.png"
+    save_axial_mosaic(zmap_p001_path, cut_coords, axial_zmap_p001_mosaic_path)
+    axial_zmap_p001_mosaic = encode_image(axial_zmap_p001_mosaic_path)
+
+
+
+    # CORONAL
+    cut_coords = get_coronal_slices(lesion_overlap_path, num_slices)
+
+    coronal_lesion_overlap_mosaic_path = mosaic_output_folder / "coronal_lesion_overlap_mosaic.png"
+    save_coronal_mosaic(lesion_overlap_path, cut_coords, coronal_lesion_overlap_mosaic_path)
+    coronal_lesion_overlap_mosaic = encode_image(coronal_lesion_overlap_mosaic_path)
+
+    coronal_lesion_overlap_filtered_mosaic_path = mosaic_output_folder / "coronal_lesion_overlap_filtered_mosaic.png"
+    save_coronal_mosaic(lesion_overlap_filtered_path, cut_coords, coronal_lesion_overlap_filtered_mosaic_path)
+    coronal_lesion_overlap_filtered_mosaic = encode_image(coronal_lesion_overlap_filtered_mosaic_path)
+
+
+    coronal_svr_beta_map_mosaic_path = mosaic_output_folder / "coronal_svr_beta_map_mosaic.png"
+
+    cut_coords = get_coronal_slices(svr_beta_map_path, num_slices)
+
+    save_coronal_mosaic(svr_beta_map_path, cut_coords, coronal_svr_beta_map_mosaic_path)
+    coronal_svr_beta_map_mosaic = encode_image(coronal_svr_beta_map_mosaic_path)
+
+
+    coronal_zmap_mosaic_path = mosaic_output_folder / "coronal_zmap_mosaic.png"
+    save_coronal_mosaic(zmap_path, cut_coords, coronal_zmap_mosaic_path)
+    coronal_zmap_mosaic = encode_image(coronal_zmap_mosaic_path)
+
+    coronal_zmap_p05_mosaic_path = mosaic_output_folder / "coronal_zmap_p05_mosaic.png"
+    save_coronal_mosaic(zmap_p05_path, cut_coords, coronal_zmap_p05_mosaic_path)
+    coronal_zmap_p05_mosaic = encode_image(coronal_zmap_p05_mosaic_path)
+
+    coronal_zmap_p01_mosaic_path = mosaic_output_folder / "coronal_zmap_p01_mosaic.png"
+    save_coronal_mosaic(zmap_p01_path, cut_coords, coronal_zmap_p01_mosaic_path)
+    coronal_zmap_p01_mosaic = encode_image(coronal_zmap_p01_mosaic_path)
+
+    coronal_zmap_p005_mosaic_path = mosaic_output_folder / "coronal_zmap_p005_mosaic.png"
+    save_coronal_mosaic(zmap_p005_path, cut_coords, coronal_zmap_p005_mosaic_path)
+    coronal_zmap_p005_mosaic = encode_image(coronal_zmap_p005_mosaic_path)
+
+    coronal_zmap_p001_mosaic_path = mosaic_output_folder / "coronal_zmap_p001_mosaic.png"
+    save_coronal_mosaic(zmap_p001_path, cut_coords, coronal_zmap_p001_mosaic_path)
+    coronal_zmap_p001_mosaic = encode_image(coronal_zmap_p001_mosaic_path)
+
+
+
+    # SAGITTAL
+    cut_coords = get_sagittal_slices(lesion_overlap_path, num_slices)
+
+    sagittal_lesion_overlap_mosaic_path = mosaic_output_folder / "sagittal_lesion_overlap_mosaic.png"
+    save_sagittal_mosaic(lesion_overlap_path, cut_coords, sagittal_lesion_overlap_mosaic_path)
+    sagittal_lesion_overlap_mosaic = encode_image(sagittal_lesion_overlap_mosaic_path)
+
+    sagittal_lesion_overlap_filtered_mosaic_path = mosaic_output_folder / "sagittal_lesion_overlap_filtered_mosaic.png"
+    save_sagittal_mosaic(lesion_overlap_filtered_path, cut_coords, sagittal_lesion_overlap_filtered_mosaic_path)
+    sagittal_lesion_overlap_filtered_mosaic = encode_image(sagittal_lesion_overlap_filtered_mosaic_path)
+
+
+    sagittal_svr_beta_map_mosaic_path = mosaic_output_folder / "sagittal_svr_beta_map_mosaic.png"
+
+    cut_coords = get_sagittal_slices(svr_beta_map_path, num_slices)
+
+    save_sagittal_mosaic(svr_beta_map_path, cut_coords, sagittal_svr_beta_map_mosaic_path)
+    sagittal_svr_beta_map_mosaic = encode_image(sagittal_svr_beta_map_mosaic_path)
+
+
+    sagittal_zmap_mosaic_path = mosaic_output_folder / "sagittal_zmap_mosaic.png"
+    save_sagittal_mosaic(zmap_path, cut_coords, sagittal_zmap_mosaic_path)
+    sagittal_zmap_mosaic = encode_image(sagittal_zmap_mosaic_path)
+
+    sagittal_zmap_p05_mosaic_path = mosaic_output_folder / "sagittal_zmap_p05_mosaic.png"
+    save_sagittal_mosaic(zmap_p05_path, cut_coords, sagittal_zmap_p05_mosaic_path)
+    sagittal_zmap_p05_mosaic = encode_image(sagittal_zmap_p05_mosaic_path)
+
+
+    sagittal_zmap_p01_mosaic_path = mosaic_output_folder / "sagittal_zmap_p01_mosaic.png"
+    save_sagittal_mosaic(zmap_p01_path, cut_coords, sagittal_zmap_p01_mosaic_path)
+    sagittal_zmap_p01_mosaic = encode_image(sagittal_zmap_p01_mosaic_path)
+
+    sagittal_zmap_p005_mosaic_path = mosaic_output_folder / "sagittal_zmap_p005_mosaic.png"
+    save_sagittal_mosaic(zmap_p005_path, cut_coords, sagittal_zmap_p005_mosaic_path)
+    sagittal_zmap_p005_mosaic = encode_image(sagittal_zmap_p005_mosaic_path)
+
+    sagittal_zmap_p001_mosaic_path = mosaic_output_folder / "sagittal_zmap_p001_mosaic.png"
+    save_sagittal_mosaic(zmap_p001_path, cut_coords, sagittal_zmap_p001_mosaic_path)
+    sagittal_zmap_p001_mosaic = encode_image(sagittal_zmap_p001_mosaic_path)
+
 
     with open(output_file, 'w') as f:
         f.write(f"""
@@ -184,7 +280,107 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
                 color: #777;
                 margin-top: 40px;
             }}
+                .image-category img {{
+                display: none;
+                width: 100%;
+                height: auto;
+            }}
+                .image-category img.active {{
+                display: block;
+            }}
+            .radio-buttons {{
+                display: flex;
+                gap: 15px;
+                margin-top: 20px;
+            }}
+    
+            label {{
+                font-size: 16px;
+                color: #333;
+                cursor: pointer;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 120px;
+                height: 40px;
+                background-color: #f0f0f0; /* Default background is white */
+                transition: all 0.3s ease;
+                text-align: center;
+                font-weight: bold;
+                user-select: none; /* Prevent text selection */
+            }}
+    
+            /* Hide the default radio buttons */
+            input[type="radio"] {{
+                display: none;
+            }}
+    
+            /* When the radio button is checked, change background to light gray */
+            input[type="radio"]:checked + .radio-button-block {{
+                background-color: #c9c9c9; /* Light gray background when clicked */
+                color: #333;
+            }}
+    
+            /* Style for the block */
+            .radio-button-block {{
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: all 0.3s ease;
+            }}
+    
+            /* Hover effect */
+            label:hover {{
+                background-color: #dfdfdf; /* Light gray hover effect */
+            }}
+    
+
         </style>
+        <script>
+            function switchSvrView(viewPrefix) {{
+                const groups = ['group3', 'group4', 'group5', 'group6', 'group7', 'group8'];
+                groups.forEach(group => {{
+                    const images = document.querySelectorAll(`.image-category img[data-group='${{group}}']`);
+                    images.forEach(img => img.classList.remove('active'));
+                    const selectedImage = document.querySelector(`.image-category img[data-group='${{group}}'][data-view='${{viewPrefix}}']`);
+                    if (selectedImage) {{
+                        selectedImage.classList.add('active');
+                    }}
+                }});
+            }}
+    
+            function switchLesionView(viewPrefix) {{
+                const groups = ['group1', 'group2'];
+                groups.forEach(group => {{
+                    const images = document.querySelectorAll(`.image-category img[data-group='${{group}}']`);
+                    images.forEach(img => img.classList.remove('active'));
+                    const selectedImage = document.querySelector(`.image-category img[data-group='${{group}}'][data-view='${{viewPrefix}}']`);
+                    if (selectedImage) {{
+                        selectedImage.classList.add('active');
+                    }}
+                }});
+            }}
+    
+            // Show or hide the threshold groups based on selected threshold
+            function toggleThresholdGroup(threshold) {{
+                const thresholdGroups = document.querySelectorAll(`.threshold-group`);
+                thresholdGroups.forEach(group => {{
+                    if (group.dataset.threshold === threshold) {{
+                        group.style.display = 'block';
+                    }} else {{
+                        group.style.display = 'none';
+                    }}
+                }});
+            }}
+    
+            window.onload = function() {{
+                document.querySelector('input[name="lesionSwitcher"][value="axial"]').click();
+                document.querySelector('input[name="svrSwitcher"][value="axial"]').click();
+                document.querySelector('input[name="thresholdSwitcher"][value="unthresholded"]').click();
+            }};
+        </script>
     </head>
     <body>
         <div class="container">
@@ -208,17 +404,41 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
             
             <div class="section">
                 <h2>Lesion Overlap</h2>
-                    <h3>Unfiltered<h3>
-                    <img src = "data:image/png;base64,{lesion_overlap_mosaic}" alt = "lesion overlap" style="width: 100%; height: auto;">
-                
+                    <!-- First Set of Radio Buttons (Lesion Switcher) -->
+                    <div class="radio-buttons">
+                        <label>
+                            <input type="radio" name="lesionSwitcher" value="axial" onclick="switchLesionView('axial');" checked>
+                            <div class="radio-button-block">Axial</div>
+                        </label>
+                        <label>
+                            <input type="radio" name="lesionSwitcher" value="coronal" onclick="switchLesionView('coronal');">
+                            <div class="radio-button-block">Coronal</div>
+                        </label>
+                        <label>
+                            <input type="radio" name="lesionSwitcher" value="sagittal" onclick="switchLesionView('sagittal');">
+                            <div class="radio-button-block">Sagittal</div>
+                        </label>
+                    </div>
+                    <!-- Lesion Overlap Group (1st div) -->
+                    <div class="image-category">
+                        <h3>Unfiltered</h3>
+                        <img src="data:image/png;base64,{axial_lesion_overlap_mosaic}" alt="Lesion Overlap Axial" data-group="group1" data-view="axial" style="width: 100%; height: auto;" class="active">
+                        <img src="data:image/png;base64,{coronal_lesion_overlap_mosaic}" alt="Lesion Overlap Coronal" data-group="group1" data-view="coronal" style="width: 100%; height: auto;">
+                        <img src="data:image/png;base64,{sagittal_lesion_overlap_mosaic}" alt="Lesion Overlap Sagittal" data-group="group1" data-view="sagittal" style="width: 100%; height: auto;">
+                    </div>
                 """)
         if min_patient_count>0:
             f.write(f"""
                     <br><br>
                 
-                    <h3>Filtered (Minimum {min_patient_count} patients)</h3>
-                    <img src = "data:image/png;base64,{lesion_overlap_filtered_mosaic}" alt = "lesion overlap filtered by {min_patient_count} patients" style="width: 100%; height: auto;">
-                """)
+                    <!-- Lesion Overlap Filtered Group (2nd div) -->
+                    <div class="image-category">
+                        <h3>Filtered (Minimum {min_patient_count} patients)</h3>
+                        <img src="data:image/png;base64,{axial_lesion_overlap_filtered_mosaic}" alt="Lesion Overlap Filtered Axial" data-group="group2" data-view="axial" style="width: 100%; height: auto;" class="active">
+                        <img src="data:image/png;base64,{coronal_lesion_overlap_filtered_mosaic}" alt="Lesion Overlap Filtered Coronal" data-group="group2" data-view="coronal" style="width: 100%; height: auto;">
+                        <img src="data:image/png;base64,{sagittal_lesion_overlap_filtered_mosaic}" alt="Lesion Overlap Filtered Sagittal" data-group="group2" data-view="sagittal" style="width: 100%; height: auto;">
+                    </div>
+                    """)
         f.write(f"""
             </div>
             
@@ -232,24 +452,90 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
 
         f.write(f"""
                 </table>
-                <h3>Unthresholded SVR-Beta map</h3>
-                <img src = "data:image/png;base64,{svr_beta_map_mosaic}" alt = "Unthresholded beta map" style="width: 100%; height: auto;">
+                <div class="image-category">
+                    <h3>SVR Beta Map</h3>
+                    <img src="data:image/png;base64,{axial_svr_beta_map_mosaic}" alt="SVR Beta Map Axial" data-group="group3" data-view="axial" style="width: 100%; height: auto;" class="active">
+                    <img src="data:image/png;base64,{coronal_svr_beta_map_mosaic}" alt="SVR Beta Map Coronal" data-group="group3" data-view="coronal" style="width: 100%; height: auto;">
+                    <img src="data:image/png;base64,{sagittal_svr_beta_map_mosaic}" alt="SVR Beta Map Sagittal" data-group="group3" data-view="sagittal" style="width: 100%; height: auto;">
+                </div>
                 
                 <h3>Permutation Tested<h3>
-                <h3>Unthresholded SVR Z-Map</h3>
-                <img src = "data:image/png;base64,{zmap_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
-                
-                <h3>p<0.05 SVR Z-Map</h3>
-                <img src = "data:image/png;base64,{zmap_p05_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
-                
-                <h3>p<0.01 SVR Z-Map</h3>
-                <img src = "data:image/png;base64,{zmap_p01_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
-                
-                <h3>p<0.005 SVR Z-Map</h3>
-                <img src = "data:image/png;base64,{zmap_p005_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
-                
-                <h3>p<0.001 SVR Z-Map</h3>
-                <img src = "data:image/png;base64,{zmap_p001_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
+                <!-- Second Set of Radio Buttons (SVR Switcher) -->
+                <div class="radio-buttons">
+                    <label>
+                        <input type="radio" name="svrSwitcher" value="axial" onclick="switchSvrView('axial');" checked>
+                        <div class="radio-button-block">Axial</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="svrSwitcher" value="coronal" onclick="switchSvrView('coronal');">
+                        <div class="radio-button-block">Coronal</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="svrSwitcher" value="sagittal" onclick="switchSvrView('sagittal');">
+                        <div class="radio-button-block">Sagittal</div>
+                    </label>
+                </div>
+            
+                <!-- Third Set of Radio Buttons (Threshold Switcher) -->
+                <div class="radio-buttons">
+                    <label>
+                        <input type="radio" name="thresholdSwitcher" value="unthresholded" onclick="toggleThresholdGroup('unthresholded')" checked>
+                        <div class="radio-button-block">Unthresholded</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="thresholdSwitcher" value="p05" onclick="toggleThresholdGroup('p<0.05')">
+                        <div class="radio-button-block">p<0.05</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="thresholdSwitcher" value="p01" onclick="toggleThresholdGroup('p<0.01')">
+                        <div class="radio-button-block">p<0.01</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="thresholdSwitcher" value="p005" onclick="toggleThresholdGroup('p<0.005')">
+                        <div class="radio-button-block">p<0.005</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="thresholdSwitcher" value="p001" onclick="toggleThresholdGroup('p<0.001')">
+                        <div class="radio-button-block">p<0.001</div>
+                    </label>
+                </div>
+            
+                <!-- Z Map Group (4th div) -->
+                <div class="image-category">
+                    <h3>Z Map (Thresholded)</h3>
+        
+                    <!-- Unthresholded Images -->
+                    <div class="threshold-group" data-threshold="unthresholded" style="display: block;">
+                        <img src="data:image/png;base64,{axial_zmap_mosaic}" alt="Z Map Axial" data-group="group4" data-view="axial" style="width: 100%; height: auto;" class="active">
+                        <img src="data:image/png;base64,{coronal_zmap_mosaic}" alt="Z Map Coronal" data-group="group4" data-view="coronal" style="width: 100%; height: auto;">
+                        <img src="data:image/png;base64,{sagittal_zmap_mosaic}" alt="Z Map Sagittal" data-group="group4" data-view="sagittal" style="width: 100%; height: auto;">
+                    </div>
+        
+                    <!-- Thresholded Images -->
+                    <div class="threshold-group" data-threshold="p<0.05" style="display: none;">
+                        <img src="data:image/png;base64,{axial_zmap_p05_mosaic}" alt="Z Map p<0.05 Axial" data-group="group5" data-view="axial" style="width: 100%; height: auto;" class="active">
+                        <img src="data:image/png;base64,{coronal_zmap_p05_mosaic}" alt="Z Map p<0.05 Coronal" data-group="group5" data-view="coronal" style="width: 100%; height: auto;">
+                        <img src="data:image/png;base64,{sagittal_zmap_p05_mosaic}" alt="Z Map p<0.05 Sagittal" data-group="group5" data-view="sagittal" style="width: 100%; height: auto;">
+                    </div>
+        
+                    <div class="threshold-group" data-threshold="p<0.01" style="display: none;">
+                        <img src="data:image/png;base64,{axial_zmap_p01_mosaic}" alt="Z Map p<0.01 Axial" data-group="group6" data-view="axial" style="width: 100%; height: auto;" class="active">
+                        <img src="data:image/png;base64,{coronal_zmap_p01_mosaic}" alt="Z Map p<0.01 Coronal" data-group="group6" data-view="coronal" style="width: 100%; height: auto;">
+                        <img src="data:image/png;base64,{sagittal_zmap_p01_mosaic}" alt="Z Map p<0.01 Sagittal" data-group="group6" data-view="sagittal" style="width: 100%; height: auto;">
+                    </div>
+        
+                    <div class="threshold-group" data-threshold="p<0.005" style="display: none;">
+                        <img src="data:image/png;base64,{axial_zmap_p005_mosaic}" alt="Z Map p<0.005 Axial" data-group="group7" data-view="axial" style="width: 100%; height: auto;" class="active">
+                        <img src="data:image/png;base64,{coronal_zmap_p005_mosaic}" alt="Z Map p<0.005 Coronal" data-group="group7" data-view="coronal" style="width: 100%; height: auto;">
+                        <img src="data:image/png;base64,{sagittal_zmap_p005_mosaic}" alt="Z Map p<0.005 Sagittal" data-group="group7" data-view="sagittal" style="width: 100%; height: auto;">
+                    </div>
+        
+                    <div class="threshold-group" data-threshold="p<0.001" style="display: none;">
+                        <img src="data:image/png;base64,{axial_zmap_p001_mosaic}" alt="Z Map p<0.001 Axial" data-group="group8" data-view="axial" style="width: 100%; height: auto;" class="active">
+                        <img src="data:image/png;base64,{coronal_zmap_p001_mosaic}" alt="Z Map p<0.001 Coronal" data-group="group8" data-view="coronal" style="width: 100%; height: auto;">
+                        <img src="data:image/png;base64,{sagittal_zmap_p001_mosaic}" alt="Z Map p<0.001 Sagittal" data-group="group8" data-view="sagittal" style="width: 100%; height: auto;">
+                    </div>
+                </div>
             </div>
             
             <div class="section highlight">

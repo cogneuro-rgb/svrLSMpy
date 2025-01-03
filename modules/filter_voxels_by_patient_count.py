@@ -7,8 +7,21 @@ def filter_voxels_by_patient_count(lesion_files, min_patient_count, normalize_ve
     """
     Filter voxels by the number of patients they are involved in.
     """
+    no_of_patients = len(lesion_files)
+    if not isinstance(min_patient_count, int):
+        if isinstance(min_patient_count, str):
+            if min_patient_count.endswith('%'):
+                min_patient_count = min_patient_count.strip('%')
+            min_patient_count = float(min_patient_count)
+            print(f"{min_patient_count}% of {no_of_patients} patients = ",end='')
+            min_patient_count = no_of_patients*min_patient_count/100
+            print(min_patient_count)
+            min_patient_count = int(min_patient_count)
+            print("Thus,")
+
+
     if min_patient_count>0:
-        print(f"Filtering voxels by patient count: {min_patient_count}")
+        print(f"Filtering voxels by patient count: {min_patient_count}/{no_of_patients}")
     else:
         print("Filtering is not done")
 
@@ -42,4 +55,4 @@ def filter_voxels_by_patient_count(lesion_files, min_patient_count, normalize_ve
         # Normalize the data to have unit norm
         lesion_data_prepared = normalize(lesion_data_prepared, norm='l2', axis=1)
 
-    return lesion_data_prepared, masker
+    return min_patient_count,lesion_data_prepared, masker
