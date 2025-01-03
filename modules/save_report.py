@@ -1,5 +1,4 @@
 from nilearn.plotting import view_img
-import tempita
 from pathlib import Path
 import pandas as pd
 import nibabel as nib
@@ -12,6 +11,10 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
     Save a comprehensive report of the LSM analysis, including parameters, significant voxels, and visualization.
     """
     print("Saving report...")
+
+    def encode_image(image_path):
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode('utf-8')
 
     atlas_reader_output_folder = Path(zmap_atlas_output_dir)
     cluster_csv_path = atlas_reader_output_folder / "atlasreader_clusters.csv"
@@ -28,9 +31,6 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
         cluster_image_paths = [atlas_reader_output_folder / f"atlasreader_cluster0{i}.png" for i in
                                range(1, n_clusters + 1)]
 
-        def encode_image(image_path):
-            with open(image_path, "rb") as img_file:
-                return base64.b64encode(img_file.read()).decode('utf-8')
 
         overview_image_base64 = encode_image(overview_image_path)
         cluster_images_base64 = [encode_image(path) for path in cluster_image_paths]
@@ -55,46 +55,43 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
     num_slices = 10
     cut_coords = get_axial_slices(lesion_overlap_path, num_slices)
     save_axial_mosaic(lesion_overlap_path, cut_coords, lesion_overlap_mosaic_path)
-
+    lesion_overlap_mosaic = encode_image(lesion_overlap_mosaic_path)
 
     lesion_overlap_filtered_path = f"{output_folder}/lesion_overlap_filtered.nii.gz"
     lesion_overlap_filtered_mosaic_path = f"{output_folder}/lesion_overlap_filtered_mosaic.png"
-
     save_axial_mosaic(lesion_overlap_filtered_path, cut_coords, lesion_overlap_filtered_mosaic_path)
-
+    lesion_overlap_filtered_mosaic = encode_image(lesion_overlap_filtered_mosaic_path)
 
     svr_beta_map_path = f"{output_folder}/beta_map.nii.gz"
     svr_beta_map_mosaic_path = f"{output_folder}/svr_beta_map_mosaic.png"
-
     cut_coords = get_axial_slices(svr_beta_map_path, num_slices)
     save_axial_mosaic(svr_beta_map_path, cut_coords, svr_beta_map_mosaic_path)
-
+    svr_beta_map_mosaic = encode_image(svr_beta_map_mosaic_path)
 
     zmap_path = f"{output_folder}/zmap.nii.gz"
     zmap_mosaic_path = f"{output_folder}/zmap_mosaic.png"
-
     save_axial_mosaic(zmap_path, cut_coords, zmap_mosaic_path)
+    zmap_mosaic = encode_image(zmap_mosaic_path)
 
     zmap_p05_path = f"{output_folder}/zmap_p05.nii.gz"
     zmap_p05_mosaic_path = f"{output_folder}/zmap_p05_mosaic.png"
-
     save_axial_mosaic(zmap_p05_path, cut_coords, zmap_p05_mosaic_path)
+    zmap_p05_mosaic = encode_image(zmap_p05_mosaic_path)
 
     zmap_p01_path = f"{output_folder}/zmap_p01.nii.gz"
     zmap_p01_mosaic_path = f"{output_folder}/zmap_p01_mosaic.png"
-
     save_axial_mosaic(zmap_p01_path, cut_coords, zmap_p01_mosaic_path)
+    zmap_p01_mosaic = encode_image(zmap_p01_mosaic_path)
 
     zmap_p005_path = f"{output_folder}/zmap_p005.nii.gz"
     zmap_p005_mosaic_path = f"{output_folder}/zmap_p005_mosaic.png"
-
     save_axial_mosaic(zmap_p005_path, cut_coords, zmap_p005_mosaic_path)
+    zmap_p005_mosaic = encode_image(zmap_p005_mosaic_path)
 
     zmap_p001_path = f"{output_folder}/zmap_p001.nii.gz"
     zmap_p001_mosaic_path = f"{output_folder}/zmap_p001_mosaic.png"
-
     save_axial_mosaic(zmap_p001_path, cut_coords, zmap_p001_mosaic_path)
-
+    zmap_p001_mosaic = encode_image(zmap_p001_mosaic_path)
 
     with open(output_file, 'w') as f:
         f.write(f"""
@@ -212,7 +209,7 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
             <div class="section">
                 <h2>Lesion Overlap</h2>
                     <h3>Unfiltered<h3>
-                    <img src = "lesion_overlap_mosaic.png" alt = "lesion overlap" style="width: 100%; height: auto;">
+                    <img src = "data:image/png;base64,{lesion_overlap_mosaic}" alt = "lesion overlap" style="width: 100%; height: auto;">
                 
                 """)
         if min_patient_count>0:
@@ -220,7 +217,7 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
                     <br><br>
                 
                     <h3>Filtered (Minimum {min_patient_count} patients)</h3>
-                    <img src = "lesion_overlap_filtered_mosaic.png" alt = "lesion overlap filtered by {min_patient_count} patients" style="width: 100%; height: auto;">
+                    <img src = "data:image/png;base64,{lesion_overlap_filtered_mosaic}" alt = "lesion overlap filtered by {min_patient_count} patients" style="width: 100%; height: auto;">
                 """)
         f.write(f"""
             </div>
@@ -236,23 +233,23 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
         f.write(f"""
                 </table>
                 <h3>Unthresholded SVR-Beta map</h3>
-                <img src = "svr_beta_map_mosaic.png" alt = "Unthresholded beta map" style="width: 100%; height: auto;">
+                <img src = "data:image/png;base64,{svr_beta_map_mosaic}" alt = "Unthresholded beta map" style="width: 100%; height: auto;">
                 
                 <h3>Permutation Tested<h3>
                 <h3>Unthresholded SVR Z-Map</h3>
-                <img src = "zmap_mosaic.png" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
+                <img src = "data:image/png;base64,{zmap_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
                 
                 <h3>p<0.05 SVR Z-Map</h3>
-                <img src = "zmap_p05_mosaic.png" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
+                <img src = "data:image/png;base64,{zmap_p05_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
                 
                 <h3>p<0.01 SVR Z-Map</h3>
-                <img src = "zmap_p01_mosaic.png" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
+                <img src = "data:image/png;base64,{zmap_p01_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
                 
                 <h3>p<0.005 SVR Z-Map</h3>
-                <img src = "zmap_p005_mosaic.png" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
+                <img src = "data:image/png;base64,{zmap_p005_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
                 
                 <h3>p<0.001 SVR Z-Map</h3>
-                <img src = "zmap_p001_mosaic.png" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
+                <img src = "data:image/png;base64,{zmap_p001_mosaic}" alt = "Permutation tested zmap" style="width: 100%; height: auto;">
             </div>
             
             <div class="section highlight">
@@ -265,10 +262,9 @@ def save_report(output_file, svr_params, behaviour_name, n_permutations, alpha, 
             </div>
             <div id="section">
                 <h2>Interactive Viewer</h2>
-    
-                <!-- Embedding another HTML file using iframe -->
-                {html_view}
-    
+                <div>
+                    {html_view}
+                </div>
             </div>
 
         """)
