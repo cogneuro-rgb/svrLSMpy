@@ -11,24 +11,3 @@ and run main.py
 
 the output of a single SVR LSM iteration is contained in a folder which is dynamically named according to the symptom name, the number of permutations and the timestamp when the run starts
 
-## Libraries to install
-nilearn  
-nibabel  
-pandas  
-numpy  
-os  
-statsmodels  
-itertools  
-sklearn (scikit-learn)  
-csv  
-pickle  
-matplotlib  
-json  
-pathlib  
-base64  
-scipy  
-atlasreader  
-datetime  
-time  
-tqdm  
-
